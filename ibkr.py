@@ -50,17 +50,17 @@ def create_stock_contract(symbol):
 	contract.currency = 'USD'
 	return contract
 
-def create_stock_order(action='BUY', quantity=1, order_type='MKT', tif='OPG'):
+def create_stock_order(action='BUY', quantity=1, order_type='MKT', tif=None):
     order = Order()
     order.action = action
     order.totalQuantity = quantity
     order.orderType = order_type
-    order.tif = tif  # OPG = order at the opening
+    if tif: order.tif = tif
     order.eTradeOnly = False
     order.firmQuoteOnly = False
     return order
 
-def place_order(symbol, action, quantity, order_type, tif):
+def place_order(symbol, action, quantity, order_type, tif=None):
     contract = create_stock_contract(symbol)
     order = create_stock_order(action, quantity, order_type, tif)
     app.placeOrder(app.nextorderId, contract, order)
@@ -68,4 +68,7 @@ def place_order(symbol, action, quantity, order_type, tif):
 
 
 if __name__ == "__main__":
-    place_order('AAPL', 'BUY', 1, 'MKT', 'OPG')
+    # place_order('AAPL', 'BUY', 1, 'MKT', 'OPG') # OPG = order at the opening
+    # place_order('AMZN', 'BUY', 1, 'MKT')
+    # place_order('AMZN', 'SELL', 1, 'MOC') # MOC = market on close
+    pass

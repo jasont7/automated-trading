@@ -1,15 +1,19 @@
 from playwright.sync_api import sync_playwright
 import pandas as pd
+import numpy as np
 import time
+from datetime import datetime, time as dtime
 import os
 from dotenv import load_dotenv
+import ibkr
 
 load_dotenv()
 
 USERNAME = os.getenv('FINVIZ_USER')
 PASS = os.getenv('FINVIZ_PASS')
 
-def run(playwright):
+
+def get_finviz_df(playwright):
     browser = playwright.chromium.launch(headless=False)
     page = browser.new_page()
 
@@ -27,10 +31,43 @@ def run(playwright):
     df = pd.read_html(f"<table>{table_html}</table>")[0]
     df = df.iloc[2:].reset_index(drop=True)
     print(df.head(20))
-    df.to_csv('data/finviz.csv', index=False)
 
     browser.close()
 
+    return df
+
+
+def df_to_buy(df, num_stocks):
+    # place an order for each row in df
+    budget_per_stock = 100
+    df['shares_to_buy'] = np.round(budget_per_stock / df['Price'].astype(float))
+
+    for index, row in df.iterrows():
+        if index < num_stocks:
+            ibkr.place_order(row['Ticker'], 'BUY', row['shares_to_buy'], 'MKT', 'OPG')
+
+
 if __name__ == "__main__":
-    with sync_playwright() as playwright:
-        run(playwright)
+    df = pd.DataFrame()
+
+    num_stocks = 2
+    buy_time = dtime(6, 29, 50)
+    buy_time_no_ms = dtime(buy_time.hour, buy_time.minute, buy_time.second)
+
+    while True:
+        cur_time = datetime.now().time()
+        cur_time_no_ms = dtime(cur_time.hour, cur_time.minute, cur_time.second)
+
+        if cur_time_no_ms == buy_time_no_ms:
+            with sync_playwright() as playwright:
+                df = get_finviz_df(playwright)
+
+            df.to_csv('data/finviz.csv', index=False)
+            
+            df_to_buy(df, num_stocks)
+
+            time.sleep(60)
+        else:
+            print(cur_time_no_ms)    
+            time.sleep(1)
+

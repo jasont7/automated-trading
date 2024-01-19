@@ -71,4 +71,9 @@ if __name__ == "__main__":
     # place_order('AAPL', 'BUY', 1, 'MKT', 'OPG') # OPG = order at the opening
     # place_order('AMZN', 'BUY', 1, 'MKT')
     # place_order('AMZN', 'SELL', 1, 'MOC') # MOC = market on close
+    # place_order('TBIL', 'SELL', 33, 'MKT', 'OPG')
     pass
+
+
+
+

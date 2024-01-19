@@ -37,21 +37,22 @@ def get_finviz_df(playwright):
     return df
 
 
-def df_to_buy(df, num_stocks):
+def df_to_buy(df, num_stocks, budget_per_stock):
     # place an order for each row in df
-    budget_per_stock = 100
     df['shares_to_buy'] = np.round(budget_per_stock / df['Price'].astype(float))
 
     for index, row in df.iterrows():
         if index < num_stocks:
-            ibkr.place_order(row['Ticker'], 'BUY', row['shares_to_buy'], 'MKT', 'OPG')
+            ibkr.place_order(row['Ticker'], 'BUY', row['shares_to_buy'], 'MKT')
 
 
 if __name__ == "__main__":
     df = pd.DataFrame()
 
-    num_stocks = 2
-    buy_time = dtime(6, 29, 50)
+    num_stocks = 10
+    budget_per_stock = 100
+    
+    buy_time = dtime(6, 30, 2)
     buy_time_no_ms = dtime(buy_time.hour, buy_time.minute, buy_time.second)
 
     while True:
@@ -64,7 +65,7 @@ if __name__ == "__main__":
 
             df.to_csv('data/finviz.csv', index=False)
             
-            df_to_buy(df, num_stocks)
+            df_to_buy(df, num_stocks, budget_per_stock)
 
             time.sleep(60)
         else:

@@ -1,3 +1,9 @@
 .DS_Store
 .env
 __pycache__
+data/output.log
+data/daily
+data/tmp
+data/2020-2024_large_plus
+data/2020-2024_mid_plus
+data/2020-2024_small_plus

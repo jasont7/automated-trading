@@ -88,10 +88,10 @@ def buy_df(df, num_stocks, budget_per_stock):
 
 
 if __name__ == "__main__":
-    num_stocks = 10
+    num_stocks = 12
     budget_per_stock = 100
 
-    buy_time = datetime.time(6, 30, 5)
+    buy_time = datetime.time(6, 30, 5)  # wait 5 seconds for stock list to settle
     buy_time_no_ms = datetime.time(buy_time.hour, buy_time.minute, buy_time.second)
 
     while True:
@@ -99,8 +99,8 @@ if __name__ == "__main__":
         cur_time_no_ms = datetime.time(cur_time.hour, cur_time.minute, cur_time.second)
 
         if cur_time_no_ms == buy_time_no_ms:
-            # df = clean_df(get_finviz_df())
-            df = get_yfin_df(num_stocks)
+            df = clean_df(get_finviz_df())
+            # df = get_yfin_df(num_stocks)
             buy_df(df, num_stocks, budget_per_stock)
 
             cur_date_str = datetime.date.today().strftime('%Y-%m-%d')

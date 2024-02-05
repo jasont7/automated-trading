@@ -80,11 +80,28 @@ def clean_df(df):
     
 
 def buy_df(df, num_stocks, budget_per_stock):
-    # place an order for each row in df
+    # Place an order for each row in df
+    # Returns a set of the tickers that were bought
+    buys = set()
+
     df['shares_to_buy'] = np.round(budget_per_stock / df['Price'].astype(float))
     for index, row in df.iterrows():
         if index < num_stocks:
             ibkr.place_order(row['Ticker'], 'BUY', row['shares_to_buy'], 'MKT')
+            buys.add(row['Ticker'])
+    
+    return buys
+
+
+def sell_positions(buys):
+    # Sell all positions that are in the buys set
+    positions = ibkr.get_positions()
+    to_sell = buys.intersection(positions.keys())
+    for ticker in to_sell:
+        ibkr.place_order(ticker, 'SELL', positions[ticker]['position'], 'MOC')
+
+    cur_date_str = datetime.date.today().strftime('%Y-%m-%d')
+    pd.DataFrame(positions).T.to_csv(f'data/positions/{cur_date_str}.csv')
 
 
 if __name__ == "__main__":
@@ -94,19 +111,23 @@ if __name__ == "__main__":
     buy_time = datetime.time(6, 30, 5)  # wait 5 seconds for stock list to settle
     buy_time_no_ms = datetime.time(buy_time.hour, buy_time.minute, buy_time.second)
 
+    testing = False
+
     while True:
         cur_time = datetime.datetime.now().time()
         cur_time_no_ms = datetime.time(cur_time.hour, cur_time.minute, cur_time.second)
 
-        if cur_time_no_ms == buy_time_no_ms:
+        if cur_time_no_ms == buy_time_no_ms or testing:
             df = clean_df(get_finviz_df())
             # df = get_yfin_df(num_stocks)
-            buy_df(df, num_stocks, budget_per_stock)
+            buys = buy_df(df, num_stocks, budget_per_stock)
 
             cur_date_str = datetime.date.today().strftime('%Y-%m-%d')
             df.to_csv(f'data/daily/{cur_date_str}.csv', index=False)
 
-            time.sleep(60)
+            time.sleep(300)
+
+            sell_positions(buys)
         else:
             print(cur_time_no_ms)    
             time.sleep(1)

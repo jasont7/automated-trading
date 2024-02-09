@@ -3,6 +3,7 @@
 __pycache__
 data/output.log
 data/daily
+data/positions
 data/tmp
 data/2020-2024_large_plus
 data/2020-2024_mid_plus

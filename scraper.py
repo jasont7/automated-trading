@@ -106,7 +106,7 @@ def sell_positions(buys):
 
 if __name__ == "__main__":
     num_stocks = 12
-    budget_per_stock = 100
+    budget_per_stock = 170
 
     buy_time = datetime.time(6, 30, 5)  # wait 5 seconds for stock list to settle
     buy_time_no_ms = datetime.time(buy_time.hour, buy_time.minute, buy_time.second)
@@ -125,7 +125,7 @@ if __name__ == "__main__":
             cur_date_str = datetime.date.today().strftime('%Y-%m-%d')
             df.to_csv(f'data/daily/{cur_date_str}.csv', index=False)
 
-            time.sleep(300)
+            time.sleep(1800)
 
             sell_positions(buys)
         else:

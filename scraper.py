@@ -27,8 +27,8 @@ def get_finviz_df():
         page.click("input[type='submit']")
 
         # Go to screener and get table html (small+, 100k+ avg volume)
-        # page.goto("https://elite.finviz.com/screener.ashx?v=171&f=cap_smallover,sh_avgvol_o100&o=gap")
-        page.goto("https://elite.finviz.com/screener.ashx?v=171&f=cap_midover&o=gap")
+        page.goto("https://elite.finviz.com/screener.ashx?v=171&f=cap_smallover,sh_avgvol_o100&o=gap")
+        # page.goto("https://elite.finviz.com/screener.ashx?v=171&f=cap_midover&o=gap")
         table_html = page.query_selector('#screener-table > td > table').inner_html()
 
         # Convert table html to dataframe
@@ -72,10 +72,26 @@ def get_yfin_df(n_stocks):
 
 
 def clean_df(df):
-    df = df[['No.', 'Ticker', 'Price', 'from Open', 'Gap', 'Volume']]
+    df = df[['No.', 'Ticker', 'Price', 'from Open', 'Gap', 'Volume']].copy()
 
+    # filter out stocks that increased too much from open
     from_open = df['from Open'].str.rstrip('%').astype(float)
-    df = df[from_open < 1.0] # filter out stocks that gapped up too much
+    df = df[from_open < 1.0]
+
+    # filter out stocks that are not real gap-downs
+    to_drop = []
+    for i, row in df.iterrows():
+        ticker = row['Ticker']
+        stock_history = yf.Ticker(ticker).history(period="2d")
+        if not stock_history.empty:
+            prev_close = stock_history.iloc[-2]['Close']
+            curr_price = float(row['Price'])
+            real_gap_pct = (curr_price - prev_close) / prev_close * 100
+            if real_gap_pct > -3.0:
+                print(f"Removing {ticker} because it's not a real gap down")
+                to_drop.append(i)
+
+    df.drop(to_drop, inplace=True)
     df = df.reset_index(drop=True)
 
     return df
@@ -107,8 +123,8 @@ def sell_positions(buys):
 
 
 if __name__ == "__main__":
-    num_stocks = 5
-    budget_per_stock = 500
+    num_stocks = 12
+    budget_per_stock = 340
 
     buy_time = datetime.time(6, 30, 5)  # wait 5 seconds for stock list to settle
     buy_time_no_ms = datetime.time(buy_time.hour, buy_time.minute, buy_time.second)

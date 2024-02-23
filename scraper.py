@@ -7,6 +7,7 @@ import datetime
 import os
 from dotenv import load_dotenv
 import ibkr
+from io import StringIO
 
 load_dotenv()
 
@@ -26,11 +27,12 @@ def get_finviz_df():
         page.click("input[type='submit']")
 
         # Go to screener and get table html (small+, 100k+ avg volume)
-        page.goto("https://elite.finviz.com/screener.ashx?v=171&f=cap_smallover,sh_avgvol_o100&o=gap")
+        # page.goto("https://elite.finviz.com/screener.ashx?v=171&f=cap_smallover,sh_avgvol_o100&o=gap")
+        page.goto("https://elite.finviz.com/screener.ashx?v=171&f=cap_midover&o=gap")
         table_html = page.query_selector('#screener-table > td > table').inner_html()
 
         # Convert table html to dataframe
-        df = pd.read_html(f"<table>{table_html}</table>")[0]
+        df = pd.read_html(StringIO(f"<table>{table_html}</table>"))[0]
         df = df.iloc[2:].reset_index(drop=True)
         print(df.head(20))
 
@@ -105,8 +107,8 @@ def sell_positions(buys):
 
 
 if __name__ == "__main__":
-    num_stocks = 12
-    budget_per_stock = 170
+    num_stocks = 5
+    budget_per_stock = 500
 
     buy_time = datetime.time(6, 30, 5)  # wait 5 seconds for stock list to settle
     buy_time_no_ms = datetime.time(buy_time.hour, buy_time.minute, buy_time.second)

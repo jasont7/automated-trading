@@ -85,7 +85,7 @@ def clean_df(df):
             ticker = row['Ticker']
             stock_history = yf.Ticker(ticker).history(period="2d")
             if not stock_history.empty:
-                prev_close = stock_history.iloc[-2]['Close']
+                prev_close = stock_history.iloc[0]['Close']
                 curr_price = float(row['Price'])
                 real_gap_pct = (curr_price - prev_close) / prev_close * 100
                 if real_gap_pct > -3.0:

@@ -81,15 +81,19 @@ def clean_df(df):
     # filter out stocks that are not real gap-downs
     to_drop = []
     for i, row in df.iterrows():
-        ticker = row['Ticker']
-        stock_history = yf.Ticker(ticker).history(period="2d")
-        if not stock_history.empty:
-            prev_close = stock_history.iloc[-2]['Close']
-            curr_price = float(row['Price'])
-            real_gap_pct = (curr_price - prev_close) / prev_close * 100
-            if real_gap_pct > -3.0:
-                print(f"Removing {ticker} because it's not a real gap down")
-                to_drop.append(i)
+        try:
+            ticker = row['Ticker']
+            stock_history = yf.Ticker(ticker).history(period="2d")
+            if not stock_history.empty:
+                prev_close = stock_history.iloc[-2]['Close']
+                curr_price = float(row['Price'])
+                real_gap_pct = (curr_price - prev_close) / prev_close * 100
+                if real_gap_pct > -3.0:
+                    print(f"Removing {ticker} because it's not a real gap down")
+                    to_drop.append(i)
+        except Exception as e:
+            print(f"Error with {ticker}: {e}")
+            to_drop.append(i)
 
     df.drop(to_drop, inplace=True)
     df = df.reset_index(drop=True)

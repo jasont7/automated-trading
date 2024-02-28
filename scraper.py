@@ -74,10 +74,6 @@ def get_yfin_df(n_stocks):
 def clean_df(df):
     df = df[['No.', 'Ticker', 'Price', 'from Open', 'Gap', 'Volume']].copy()
 
-    # filter out stocks that increased too much from open
-    from_open = df['from Open'].str.rstrip('%').astype(float)
-    df = df[from_open < 1.0]
-
     # filter out stocks that are not real gap-downs
     to_drop = []
     for i, row in df.iterrows():
